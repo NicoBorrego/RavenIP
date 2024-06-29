@@ -1,0 +1,20 @@
+{
+    "data": [
+        {
+            "Hora": "22:37:14",
+            "CPU": 98.7,
+            "Memoria": 48.1,
+            "Disco": 60.8,
+            "Velocidad_Descarga": "85.57 MB",
+            "Velocidad_Subida": "85.88 MB"
+        },
+        {
+            "Hora": "22:38:06",
+            "CPU": 30.5,
+            "Memoria": 52.0,
+            "Disco": 60.8,
+            "Velocidad_Descarga": "83.83 MB",
+            "Velocidad_Subida": "83.87 MB"
+        }
+    ]
+}
