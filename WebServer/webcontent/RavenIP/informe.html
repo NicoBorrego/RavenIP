@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="./img/Logo.png" type="image/png">
+  <title>Informe</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<style>
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .divChart {
+    border: 1px solid #d6d6fa;
+    border-radius: 20px;
+    box-shadow: 2px 2px 5px 2px #d6d6fa;
+    width: calc(50% - 10px);
+    text-align: center;
+  }
+
+  #divTitulo {
+    margin-bottom: 20px; /* Espacio entre el título y los gráficos */
+    background-color: #d6d6fa;
+    height: 10vh;
+  }
+  #divTitulo h4{
+    padding-top: 3vh;
+  }
+</style>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12" style="text-align: center;" id="divTitulo">
+        <img src="./img/Logo.png" class="img-fluid" style="float: left; margin-right: 20px; width: 7%;">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12" style="text-align: center;">
+        <br>
+      </div>
+    </div>
+    <div class="row align-items-center">
+      <div class="col-1"></div>
+      <div class="col-10 container">
+        <div class="divChart">
+          <canvas id="cpuChart"></canvas>
+        </div>
+        <div class="divChart">
+          <canvas id="memoriaChart"></canvas>
+        </div>
+        <div class="divChart">
+          <canvas id="discoChart"></canvas>
+        </div>
+        <div class="divChart">
+          <canvas id="velocidadChart"></canvas>
+        </div>
+      </div>
+      <div class="col-1"></div>
+    </div>
+  </div>
+</body>
+  <script>
+    const query = window.location.search;
+    const url = new URLSearchParams(query);
+    const cliente = url.get('cliente');
+    // Organizar datos en listas separadas
+    // Acceder a la lista de datos de monitoreo
+    const monitoreoDatosString = url.get('monitoreo');
+    const sistema = JSON.parse(url.get('sistema'));
+    const monitoreoDatos = JSON.parse(JSON.parse(monitoreoDatosString));
+    console.log(monitoreoDatos);
+    // Extraer las horas, CPU, memoria, disco, velocidad de descarga y velocidad de subida
+    const horas = monitoreoDatos.map(dato => dato.Hora);
+    const cpu = monitoreoDatos.map(dato => dato.CPU);
+    const memoria = monitoreoDatos.map(dato => dato.Memoria);
+    const disco = monitoreoDatos.map(dato => dato.Disco);
+    const velocidadDescarga = monitoreoDatos.map(dato => parseFloat(dato.Velocidad_Descarga));
+    const velocidadSubida = monitoreoDatos.map(dato => parseFloat(dato.Velocidad_Subida));
+    window.onload = function(){
+        let titulo = document.getElementById("divTitulo");
+        let subtitulo = document.createElement("h4");
+        subtitulo.textContent = "Informe de "+cliente+" con sistema operativo "+sistema;
+        titulo.appendChild(subtitulo);
+    }
+    // Crear gráfico de CPU
+    const cpuChartCtx = document.getElementById('cpuChart').getContext('2d');
+    new Chart(cpuChartCtx, {
+      type: 'line',
+      data: {
+        labels: horas,
+        datasets: [{
+          label: 'CPU (%)',
+          data: cpu,
+          borderColor: 'red',
+          borderWidth: 1
+        }]
+      },
+      options: {}
+    });
+
+    // Crear gráfico de Memoria
+    const memoriaChartCtx = document.getElementById('memoriaChart').getContext('2d');
+    new Chart(memoriaChartCtx, {
+      type: 'line',
+      data: {
+        labels: horas,
+        datasets: [{
+          label: 'Memoria (%)',
+          data: memoria,
+          borderColor: 'blue',
+          borderWidth: 1
+        }]
+      },
+      options: {}
+    });
+
+    // Crear gráfico de Disco
+    const discoChartCtx = document.getElementById('discoChart').getContext('2d');
+    new Chart(discoChartCtx, {
+      type: 'bar',
+      data: {
+        labels: horas,
+        datasets: [{
+          label: 'Disco (%)',
+          data: disco,
+          borderColor: 'green',
+          borderWidth: 1
+        }]
+      },
+      options: {}
+    });
+
+    // Crear un solo mapeo para extraer las velocidades de descarga y subida
+    const velocidades = monitoreoDatos.map(dato => ({
+    hora: dato.Hora,
+    descarga: parseFloat(dato.Velocidad_Descarga),
+    subida: parseFloat(dato.Velocidad_Subida)
+    }));
+
+    // Crear gráfico de Velocidad de Descarga y Subida
+    const velocidadChartCtx = document.getElementById('velocidadChart').getContext('2d');
+    new Chart(velocidadChartCtx, {
+    type: 'line',
+    data: {
+        labels: velocidades.map(dato => dato.hora),
+        datasets: [{
+        label: 'Velocidad de Descarga (MB)',
+        data: velocidades.map(dato => dato.descarga),
+        borderColor: 'orange',
+        borderWidth: 1
+        },
+        {
+        label: 'Velocidad de Subida (MB)',
+        data: velocidades.map(dato => dato.subida),
+        borderColor: 'purple',
+        borderWidth: 1
+        }]
+    },
+    options: {}
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>

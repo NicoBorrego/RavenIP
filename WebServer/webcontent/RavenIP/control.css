@@ -1,0 +1,60 @@
+body{
+    width: 100%;
+    height: 100%;
+    background-color: #d6d6fa;
+    color: black;
+    font-family: Arial;
+    font-size: medium;
+}
+html, body 
+{ 
+ height: 100%;
+ overflow: hidden
+}
+#divGeneral{
+    width: 100%;
+    height: 100vh;
+    padding: 0;
+}
+#controles{
+    padding-top: 1vh;
+    width: 100%;
+    text-align: center;
+}
+button{
+    border: 0;
+    background-color: #ece7e3;
+}
+button img{
+    width: 80%;
+    height: 5vh;
+}
+#info{
+    padding-top: 1vh;
+    font-size: smaller;
+    font-weight: bold;
+}
+button:hover{
+    background-color: #c8c4c0;
+}
+#filaAlumnos{
+    width: 100%;
+    height: 100%;
+}
+#pcs{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Distribuye las celdas automáticamente */
+    gap: 5px;
+    text-align: center;
+    background-color: white;
+    margin-top: 1vh;
+    align-content: flex-start; 
+}
+#pcs img{
+    width: 100%;
+    height: auto;
+}
+#controles, #alumnos{
+    background-color: #d6d6fa;
+}
+/*fbe9d2 */

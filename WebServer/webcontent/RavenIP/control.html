@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control</title>
+    <link rel="icon" href="./img/Logo.png" type="image/png">
+    <link href="./bootstrap-5.0.2-dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+    body{
+        width: 100%;
+        height: 100%;
+        background-color: white;
+        color: black;
+        font-family: Arial;
+        font-size: medium;
+    }
+    #divGeneral{
+        width: 100%;
+        height: 100vh;
+    }
+    #controles{
+        padding-top: 1vh;
+        width: 100%;
+        text-align: center;
+        background-color: #BCBCDA;
+    }
+    button{
+        border: 0;
+        background-color: #BCBCDA;
+    }
+    button img{
+        width: 50%;
+        height: 3vh;
+    }
+    button:hover{
+        background-color: #c8c4c0;
+    }
+    #pc{
+        width: 1280px;
+        height: 720px;
+    }
+    #pc img{
+        width: 100%;
+        height: 100%;
+    }
+    #botones button:hover, #btnControl.selected{
+        background-color: #c8c4c0;
+    }
+</style>
+<body>
+    <!-- Utiliza un contenedor para cada alumno con su respectivo identificador -->
+    <div class="container-fluid" id="divGeneral">
+        <div class="row" id="controles">
+            <div class="col-3"></div>
+            <div class="col-2">
+                <button id="btnControl" onclick="handleClick()">
+                    <img class="img-fluid" src="./img/Control.png"/>
+                </button>
+            </div>
+            <div class="col-2">
+                <button class="btn" id="btnCaptura" onclick="capturar()">
+                    <img class="img-fluid" id="imgCaptura" src="./img/Captura.png"/>
+                </button>
+            </div>
+            <div class="col-2">
+                <button id="btnSalir">
+                    <img class="img-fluid" src="./img/Exit.png"/>
+                </button>
+            </div>
+            <div class="col-3"></div>
+        </div>
+        <div class="row" id="general"><div class="col-2"><br></div><div class="col-8" id="pc"></div><div class="col-2"><br></div></div>
+    </div>
+    <script>
+        const query = window.location.search;
+        const url = new URLSearchParams(query);
+        const ipServidor = url.get('ip');
+        const puerto = url.get('puerto');
+        const cliente = url.get('cliente');
+        const socket = new WebSocket('wss://'+ipServidor+':'+puerto);
+        var contador = 0;
+        const image = document.createElement('img');
+        var coordenada = "";
+        var anchoPantalla = 0, altoPantalla = 0;
+        var drag=false;
+        var principal = window.opener;
+        var controlado = false;
+        var capturando = false;
+
+        socket.onopen = function(event) {
+            console.log('Conexión establecida con el servidor');
+        };
+
+        socket.onmessage = function(event) {
+            // Parsea el objeto JSON
+            const data = event.data;
+            // Create an image element
+            const image = new Image();
+
+            // Set the source of the image to the base64-encoded data
+            image.src = 'data:image/jpeg;base64,' + data.substr(data.indexOf(',') + 1);
+
+            anchoPantalla = image.width;
+            altoPantalla = image.height;
+
+            console.log('Datos recibidos del servidor');
+
+            // Get the HTML element with the id 'pc'
+            const pcElement = document.getElementById('pc');
+
+            // Clear any previous content in the 'pc' element
+            pcElement.innerHTML = '';
+
+            // Append the image to the 'pc' element
+            pcElement.appendChild(image);
+        };
+
+        socket.onclose = function(event) {
+            console.error('Conexión cerrada con el servidor: ', event);
+        };
+        
+        socket.onerror = function(event) {
+            console.error('Error en la conexión con el servidor: ', event);
+        };
+
+        document.addEventListener("keydown",function(event){
+            socket.send("key:"+event.code);
+            console.log(event.code);
+        });
+        
+        document.getElementById("pc").addEventListener("click",function(event){
+            if(controlado){
+                socket.send("click:"+coordenadas(event));
+            }
+        });
+        document.getElementById("pc").addEventListener("contextmenu",function(event){
+            event.preventDefault();
+            if(controlado){
+                socket.send("rclick:"+coordenadas(event));
+            }
+        });
+        document.getElementById("pc").addEventListener("wheel",function(event){
+            if(controlado){
+                socket.send("wheel:"+event.deltaY);
+            }
+        });
+        
+        function coordenadas(event) {
+            const rect = document.getElementById("pc").getBoundingClientRect();
+            const x = ((event.clientX - rect.left) / rect.width) * anchoPantalla;
+            const y = ((event.clientY - rect.top) / rect.height) * altoPantalla;
+            return `${x}:${y}`;
+        }
+
+        document.getElementById("btnSalir").addEventListener("click", function(){
+            principal.postMessage({ type: "cerrado", value: puerto, clientid: cliente }, "*");
+            window.close();
+        });
+
+        function handleClick() {
+                let button = document.getElementById("btnControl");
+                if (button.classList.contains('selected')) {
+                    // Si ya está seleccionado, desseleccionar
+                    button.classList.remove('selected');
+                    controlado = false;
+                } else {
+                    button.classList.add('selected');
+                    controlado = true;
+                }
+        }
+
+        function capturar(){
+            let imagen = document.getElementById("imgCaptura");
+            if(!capturando){
+                imagen.src = './img/Parar.png';
+                socket.send("capturar");
+                capturando = true;
+            }else{
+                imagen.src = './img/Captura.png';
+                socket.send("parar");
+                capturando = false;
+            }
+        }
+    </script>
+    <script src="./bootstrap-5.0.2-dist/js/bootstrap.min.js"></script>
+</body>
+</html>
